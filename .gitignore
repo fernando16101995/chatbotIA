@@ -1,0 +1,40 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (SDK path, etc)
+local.properties
+
+# Log/cache files
+*.log
+*.xml
+*.iml
+.idea/
+
+# Exceptions for .idea/
+!.idea/codeStyles/
+!.idea/copyright/
+!.idea/inspectionProfiles/
+!.idea/iconloader.xml
+
+# External native build files
+.externalNativeBuild/
+.cxx/
+
+# Android Studio captures
+captures/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Signing files (Keystores)
+*.jks
+*.keystore
+
+# Google Services keys
+google-services.json
+
+# Backup files
+*.bak
+*.swp
