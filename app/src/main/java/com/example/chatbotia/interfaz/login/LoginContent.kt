@@ -54,7 +54,7 @@ fun LoginContent(
 
                 Text(
                     text = "Inicia sesión",
-                    color = Color.Gray
+                    color = VioletPrimary
                 )
 
                 OutlinedTextField(
@@ -64,6 +64,8 @@ fun LoginContent(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
                         focusedBorderColor = VioletPrimary,
                         unfocusedBorderColor = VioletPrimary,
                         focusedLabelColor = VioletPrimary,
@@ -79,6 +81,8 @@ fun LoginContent(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black,
                         focusedBorderColor = VioletPrimary,
                         unfocusedBorderColor = VioletPrimary,
                         focusedLabelColor = VioletPrimary,
