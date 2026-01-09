@@ -19,12 +19,10 @@ import com.example.chatbotia.interfaz.theme.YellowAccent
 
 @Composable
 fun LoginContent(
+    viewModel: LoginViewModel,
     onLoginSuccess: () -> Unit,
     onGoToRegister: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
     Box(modifier = Modifier.fillMaxSize()) {
 
         // 🔮 Fondo animado compartido
@@ -58,11 +56,12 @@ fun LoginContent(
                 )
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = viewModel.email,
+                    onValueChange = { viewModel.email = it },
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !viewModel.isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
@@ -74,12 +73,13 @@ fun LoginContent(
                 )
 
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = viewModel.password,
+                    onValueChange = { viewModel.password = it },
                     label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !viewModel.isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
@@ -90,12 +90,18 @@ fun LoginContent(
                     )
                 )
 
+                if (viewModel.errorMessage != null) {
+                    Text(
+                        text = viewModel.errorMessage!!,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
                 Button(
-                    onClick = {
-                        if (email.isNotBlank() && password.isNotBlank()) {
-                            onLoginSuccess()
-                        }
-                    },
+                    onClick = { viewModel.login(onLoginSuccess) },
+                    enabled = !viewModel.isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = YellowAccent
                     ),
@@ -103,11 +109,19 @@ fun LoginContent(
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Text(
-                        "Entrar",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+                    if (viewModel.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            "Entrar",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
                 }
 
                 // 👉 Ir a registro
