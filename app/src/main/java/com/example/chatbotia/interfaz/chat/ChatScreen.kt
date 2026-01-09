@@ -10,19 +10,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
 import com.example.chatbotia.interfaz.theme.VioletPrimary
 import com.example.chatbotia.interfaz.theme.YellowAccent
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 /* ============================
    📦 MODELO DE DATOS
@@ -37,22 +39,41 @@ data class ChatMessage(
    ============================ */
 @Composable
 fun ChatScreen() {
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage("¡Hola! Soy Seren 👋 ¿Cómo te sientes hoy?", false)
-        )
-    }
-
-    var isTyping by remember { mutableStateOf(false) }
-    var inputText by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val viewModel: ChatViewModel = viewModel(
+        factory = ViewModelFactory(context)
+    )
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Scroll automático al último mensaje
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            listState.animateScrollToItem(messages.size - 1)
+    LaunchedEffect(viewModel.messages.size) {
+        if (viewModel.messages.isNotEmpty()) {
+            listState.animateScrollToItem(viewModel.messages.size - 1)
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Borrar historial") },
+            text = { Text("¿Estás seguro de que quieres eliminar todos los mensajes? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearChat()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Borrar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     Box(
@@ -63,13 +84,13 @@ fun ChatScreen() {
         // 🔮 Fondo Animado
         AnimatedRandomPaintBackground()
 
-        // 🧾 Card del Chat: Anclada ABAJO para que el input quede siempre sobre el teclado
+        // 🧾 Card del Chat
         Card(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth(0.92f)
                 .fillMaxHeight(0.85f)
-                .padding(bottom = 16.dp), // Margen inferior estético
+                .padding(bottom = 16.dp),
             shape = RoundedCornerShape(32.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f)),
             elevation = CardDefaults.cardElevation(16.dp)
@@ -81,15 +102,26 @@ fun ChatScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(VioletPrimary)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = "Seren",
                         color = Color.White,
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Center)
                     )
+
+                    IconButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Borrar historial",
+                            tint = Color.White
+                        )
+                    }
                 }
 
                 /* ---------- MENSAJES ---------- */
@@ -101,11 +133,11 @@ fun ChatScreen() {
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(messages) { message ->
+                    items(viewModel.messages) { message ->
                         ChatBubble(message)
                     }
 
-                    if (isTyping) {
+                    if (viewModel.isTyping) {
                         item { TypingIndicator() }
                     }
                 }
@@ -118,22 +150,9 @@ fun ChatScreen() {
 
                 /* ---------- INPUT ---------- */
                 ChatInput(
-                    text = inputText,
-                    onTextChange = { inputText = it },
-                    onSend = {
-                        if (inputText.isNotBlank()) {
-                            val userText = inputText
-                            messages.add(ChatMessage(userText, true))
-                            inputText = ""
-                            isTyping = true
-
-                            scope.launch {
-                                delay(1500)
-                                isTyping = false
-                                messages.add(ChatMessage(getMockResponse(userText), false))
-                            }
-                        }
-                    }
+                    text = viewModel.inputText,
+                    onTextChange = { viewModel.inputText = it },
+                    onSend = { viewModel.sendMessage() }
                 )
             }
         }
@@ -237,14 +256,5 @@ fun ChatInput(
                 )
             }
         }
-    }
-}
-
-fun getMockResponse(input: String): String {
-    val lower = input.lowercase()
-    return when {
-        lower.contains("hola") -> "¡Hola! ¿Cómo has estado?"
-        lower.contains("triste") || lower.contains("mal") -> "Te escucho. Desahogarte es el primer paso. ¿Qué pasó?"
-        else -> "Entiendo. Cuéntame más sobre eso, te leo con atención."
     }
 }

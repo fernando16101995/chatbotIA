@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
 
 @Composable
@@ -11,6 +14,11 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onGoToRegister: () -> Unit
 ) {
+    val context = LocalContext.current
+    val loginViewModel: LoginViewModel = viewModel(
+        factory = ViewModelFactory(context)
+    )
+
     Box(modifier = Modifier.fillMaxSize()) {
 
         // 🔮 Fondo animado
@@ -22,6 +30,7 @@ fun LoginScreen(
             contentAlignment = Alignment.Center
         ) {
             LoginContent(
+                viewModel = loginViewModel,
                 onLoginSuccess = onLoginSuccess,
                 onGoToRegister = onGoToRegister
             )

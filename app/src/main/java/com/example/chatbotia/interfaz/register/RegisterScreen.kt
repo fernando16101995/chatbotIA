@@ -10,11 +10,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
 import com.example.chatbotia.interfaz.theme.VioletPrimary
 import com.example.chatbotia.interfaz.theme.YellowAccent
@@ -24,9 +27,10 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onBackToLogin: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val viewModel: RegisterViewModel = viewModel(
+        factory = ViewModelFactory(context)
+    )
     val scrollState = rememberScrollState()
 
     Box(
@@ -66,11 +70,12 @@ fun RegisterScreen(
                 )
 
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = viewModel.email,
+                    onValueChange = { viewModel.email = it },
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !viewModel.isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
@@ -82,12 +87,13 @@ fun RegisterScreen(
                 )
 
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = viewModel.password,
+                    onValueChange = { viewModel.password = it },
                     label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !viewModel.isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
@@ -99,12 +105,13 @@ fun RegisterScreen(
                 )
 
                 OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
+                    value = viewModel.confirmPassword,
+                    onValueChange = { viewModel.confirmPassword = it },
                     label = { Text("Confirmar contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !viewModel.isLoading,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black,
@@ -115,22 +122,45 @@ fun RegisterScreen(
                     )
                 )
 
+                if (viewModel.errorMessage != null) {
+                    Text(
+                        text = viewModel.errorMessage!!,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
+                if (viewModel.successMessage != null) {
+                    Text(
+                        text = viewModel.successMessage!!,
+                        color = Color.Green,
+                        fontSize = 14.sp,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
                 Button(
-                    onClick = {
-                        if (email.isNotBlank() && password.isNotBlank() && password == confirmPassword) {
-                            onRegisterSuccess()
-                        }
-                    },
+                    onClick = { viewModel.register(onRegisterSuccess) },
+                    enabled = !viewModel.isLoading,
                     colors = ButtonDefaults.buttonColors(containerColor = YellowAccent),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Text(
-                        "Registrarse",
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
+                    if (viewModel.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.Black,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            "Registrarse",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
                 }
 
                 ClickableText(
