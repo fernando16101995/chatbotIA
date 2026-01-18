@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.chatbotia.interfaz.chat.ChatScreen
 import com.example.chatbotia.interfaz.login.LoginScreen
+import com.example.chatbotia.interfaz.profile.ProfileScreen
 import com.example.chatbotia.interfaz.register.RegisterScreen
 
 @Composable
@@ -32,7 +33,6 @@ fun AppNavigation() {
             RegisterScreen(
                 onRegisterSuccess = {
                     navController.popBackStack()
-
                 },
                 onBackToLogin = {
                     navController.popBackStack()
@@ -41,7 +41,22 @@ fun AppNavigation() {
         }
 
         composable("chat") {
-            ChatScreen()
+            ChatScreen(
+                onNavigateToProfile = {
+                    navController.navigate("profile")
+                }
+            )
+        }
+
+        composable("profile") {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

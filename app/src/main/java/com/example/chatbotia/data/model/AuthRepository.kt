@@ -94,8 +94,6 @@ class ChatRepository {
                         if (data.trim() == "[DONE]") break
                         
                         // Emitimos el contenido tal cual viene (importante para espacios)
-                        // Si el servidor envía un JSON, aquí deberías parsearlo. 
-                        // Si envía texto plano, emitimos data directamente.
                         emit(data) 
                     }
                 }
@@ -106,4 +104,45 @@ class ChatRepository {
             emit("Error de conexión")
         }
     }.flowOn(Dispatchers.IO)
+
+    // --- NUEVAS FUNCIONES DE ANÁLISIS ---
+
+    suspend fun analyzePhq9(token: String, narrative: String): Result<Phq9Response> {
+        return try {
+            val response = api.analyzePhq9("Bearer $token", Phq9Request(narrative))
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al analizar texto: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAssessmentSummary(token: String): Result<HealthSummary> {
+        return try {
+            val response = api.getAssessmentSummary("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener resumen: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getRiskAlert(token: String): Result<RiskAlert> {
+        return try {
+            val response = api.getRiskAlert("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener alerta: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
