@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +39,9 @@ data class ChatMessage(
    💬 PANTALLA DE CHAT
    ============================ */
 @Composable
-fun ChatScreen() {
+fun ChatScreen(
+    onNavigateToProfile: () -> Unit = {}
+) {
     val context = LocalContext.current
     val viewModel: ChatViewModel = viewModel(
         factory = ViewModelFactory(context)
@@ -102,8 +105,20 @@ fun ChatScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(VioletPrimary)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
                 ) {
+                    // Botón Perfil (Izquierda)
+                    IconButton(
+                        onClick = onNavigateToProfile,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Ver perfil",
+                            tint = Color.White
+                        )
+                    }
+
                     Text(
                         text = "Seren",
                         color = Color.White,
@@ -112,6 +127,7 @@ fun ChatScreen() {
                         modifier = Modifier.align(Alignment.Center)
                     )
 
+                    // Botón Borrar (Derecha)
                     IconButton(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.align(Alignment.CenterEnd)
