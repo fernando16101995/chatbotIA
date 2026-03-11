@@ -4,8 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.ResponseBody
-import java.io.BufferedReader
 
 class AuthRepository {
     private val api = RetrofitClient.api
@@ -40,27 +38,13 @@ class AuthRepository {
 class ChatRepository {
     private val api = RetrofitClient.api
 
-    suspend fun sendMessage(token: String, message: String): Result<ChatResponse> {
-        return try {
-            val authHeader = "Bearer $token"
-            val response = api.sendMessage(authHeader, message)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Error: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun getHistory(token: String): Result<List<HistoryItem>> {
+    suspend fun getHistory(token: String): Result<ChatHistoryResponse> {
         return try {
             val response = api.getHistory("Bearer $token")
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error al obtener historial"))
+                Result.failure(Exception("Error al obtener historial: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -76,25 +60,30 @@ class ChatRepository {
         }
     }
 
-    /**
-     * Procesa la respuesta de stream línea por línea manteniendo espacios.
-     */
     fun streamMessage(token: String, message: String): Flow<String> = flow {
         try {
-            val response = api.streamMessage("Bearer $token", StreamRequest(message))
+            val response = api.streamMessage(
+                "Bearer $token",
+                StreamRequest(message = message, useContext = true)
+            )
+
             if (response.isSuccessful && response.body() != null) {
                 val reader = response.body()!!.byteStream().bufferedReader()
-                
+
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
-                    val currentLine = line ?: ""
+                    val currentLine = line.orEmpty()
+
                     if (currentLine.startsWith("data: ")) {
-                        val data = currentLine.substring(6) // Extraemos después de "data: "
-                        
-                        if (data.trim() == "[DONE]") break
-                        
-                        // Emitimos el contenido tal cual viene (importante para espacios)
-                        emit(data) 
+                        val data = currentLine.removePrefix("data: ")
+
+                        if (data.trim() == "[DONE]") {
+                            break
+                        }
+
+                        if (data.isNotBlank()) {
+                            emit(data)
+                        }
                     }
                 }
             } else {
@@ -105,11 +94,9 @@ class ChatRepository {
         }
     }.flowOn(Dispatchers.IO)
 
-    // --- NUEVAS FUNCIONES DE ANÁLISIS ---
-
     suspend fun analyzePhq9(token: String, narrative: String): Result<Phq9Response> {
         return try {
-            val response = api.analyzePhq9("Bearer $token", Phq9Request(narrative))
+            val response = api.analyzePhq9("Bearer $token", narrative)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -140,6 +127,95 @@ class ChatRepository {
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("Error al obtener alerta: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPhq9History(token: String): Result<List<Phq9Result>> {
+        return try {
+            val response = api.getPhq9History("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener historial PHQ-9: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getLatestPhq9(token: String): Result<Phq9Result> {
+        return try {
+            val response = api.getLatestPhq9("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener último PHQ-9: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getDetections(
+        token: String,
+        limit: Int = 20,
+        onlyPositive: Boolean = false
+    ): Result<List<DetectionItem>> {
+        return try {
+            val response = api.getDetections(
+                token = "Bearer $token",
+                limit = limit,
+                onlyPositive = onlyPositive
+            )
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener detecciones: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPhq9ConversationalStatus(token: String): Result<Phq9ConversationalStatus> {
+        return try {
+            val response = api.getPhq9ConversationalStatus("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener estado PHQ-9 conversacional: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPhq9ConversationalHistory(
+        token: String,
+        limit: Int = 10
+    ): Result<List<Phq9ConversationalResult>> {
+        return try {
+            val response = api.getPhq9ConversationalHistory("Bearer $token", limit)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener historial conversacional: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun cancelPhq9Conversational(token: String): Result<MessageResponse> {
+        return try {
+            val response = api.cancelPhq9Conversational("Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al cancelar evaluación: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

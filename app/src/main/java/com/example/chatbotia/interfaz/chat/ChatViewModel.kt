@@ -26,15 +26,22 @@ class ChatViewModel(
 
     private fun loadHistory() {
         val token = tokenManager.getToken() ?: return
+
         viewModelScope.launch {
-            repository.getHistory(token).onSuccess { history ->
+            repository.getHistory(token).onSuccess { historyResponse ->
                 messages.clear()
-                if (history.isEmpty()) {
+
+                if (historyResponse.messages.isEmpty()) {
                     messages.add(ChatMessage("¡Hola! Soy Seren 👋 ¿Cómo te sientes hoy?", false))
                 } else {
-                    history.forEach { item ->
-                        messages.add(ChatMessage(item.message, true))
-                        messages.add(ChatMessage(item.reply, false))
+                    historyResponse.messages.forEach { item ->
+                        val isUser = item.role == "user"
+                        messages.add(
+                            ChatMessage(
+                                text = item.content,
+                                isUser = isUser
+                            )
+                        )
                     }
                 }
             }

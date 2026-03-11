@@ -88,28 +88,35 @@ fun ProfileScreen(
                 if (viewModel.isLoading) {
                     CircularProgressIndicator(color = YellowAccent)
                 } else if (summary != null) {
-                    // Tarjetas de estadísticas con los campos reales del servidor
                     StatCard(
                         title = "Evaluaciones PHQ-9",
-                        value = summary.totalAssessments.toString(),
+                        value = summary.totalPhq9Assessments.toString(),
                         icon = Icons.Default.Info
                     )
+
                     StatCard(
                         title = "Detecciones de ánimo",
-                        value = summary.depressionDetections.toString(),
+                        value = summary.depressionDetectionCount.toString(),
                         icon = Icons.Default.Info,
-                        color = if (summary.depressionDetections > 5) Color(0xFFFFCDD2) else Color.White
+                        color = if (summary.depressionDetectionCount > 5) {
+                            Color(0xFFFFCDD2)
+                        } else {
+                            Color.White
+                        }
                     )
-                    
-                    val riskLevel = summary.currentRisk ?: "minimal"
+
+                    val riskLevel = summary.overallRiskLevel
+
                     StatCard(
                         title = "Nivel de riesgo",
                         value = riskLevel.uppercase(),
                         icon = Icons.Default.Info,
-                        color = when(riskLevel.lowercase()) {
-                            "high", "alto" -> Color(0xFFFF8A80)
-                            "moderate", "moderado" -> Color(0xFFFFD180)
-                            "minimal", "bajo" -> Color(0xFFB9F6CA)
+                        color = when (riskLevel.lowercase()) {
+                            "critical" -> Color(0xFFFF5252)
+                            "severe" -> Color(0xFFFF8A80)
+                            "moderate" -> Color(0xFFFFD180)
+                            "mild" -> Color(0xFFFFFF8D)
+                            "minimal" -> Color(0xFFB9F6CA)
                             else -> Color.White
                         }
                     )
