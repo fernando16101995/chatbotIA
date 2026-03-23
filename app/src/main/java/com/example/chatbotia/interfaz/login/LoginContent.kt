@@ -20,7 +20,7 @@ import com.example.chatbotia.interfaz.theme.YellowAccent
 @Composable
 fun LoginContent(
     viewModel: LoginViewModel,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (isAdmin: Boolean) -> Unit,
     onGoToRegister: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {

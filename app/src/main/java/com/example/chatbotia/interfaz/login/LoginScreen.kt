@@ -11,7 +11,7 @@ import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (isAdmin: Boolean) -> Unit,  // ← Cambio aquí
     onGoToRegister: () -> Unit
 ) {
     val context = LocalContext.current
@@ -20,18 +20,15 @@ fun LoginScreen(
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
-
-        // 🔮 Fondo animado
         AnimatedRandomPaintBackground()
 
-        // 🧾 Contenido del login
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             LoginContent(
                 viewModel = loginViewModel,
-                onLoginSuccess = onLoginSuccess,
+                onLoginSuccess = onLoginSuccess,  // ← Pasar el callback
                 onGoToRegister = onGoToRegister
             )
         }

@@ -69,4 +69,6 @@ dependencies {
 
     // Coroutines (para llamadas asíncronas)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    //liveData para compose
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
 }

@@ -11,7 +11,12 @@ interface ChatbotApiService {
 
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<TokenResponse>
-//--------------------Chat-----------------------------//
+    @GET("auth/me")
+    suspend fun getCurrentUserInfo(
+        @Header("Authorization") token: String
+    ): Response<CurrentUserInfo>
+
+    //--------------------Chat-----------------------------//
     @Streaming
     @POST("chat/stream")
     suspend fun streamMessage(
@@ -37,6 +42,12 @@ interface ChatbotApiService {
     ): Response<Phq9Response>
 
 //--------------------Assessment---------------------//
+
+    @POST("assessment/phq9/analyze")
+    suspend fun analyzePhq9(
+        @Header("Authorization") token: String,
+        @Body request: Phq9Request
+    ): Response<Phq9Response>
 
     @GET("assessment/summary")
     suspend fun getAssessmentSummary(
@@ -81,4 +92,31 @@ interface ChatbotApiService {
     suspend fun cancelPhq9Conversational(
         @Header("Authorization") token: String
     ): Response<MessageResponse>
+
+
+    //------------metrics-------------------------------------------//
+
+    // Dashboard Admin
+    @GET("admin/dashboard/metrics")
+    suspend fun getDashboardMetrics(
+        @Header("Authorization") token: String
+    ): Response<DashboardMetrics>
+
+    @GET("admin/dashboard/users")
+    suspend fun getUsersList(
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0
+    ): Response<UsersList>
+
+    @GET("admin/dashboard/user/{user_id}")
+    suspend fun getUserDetail(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: Int
+    ): Response<UserDetail>
+
+    @GET("admin/dashboard/high-risk-users")
+    suspend fun getHighRiskUsers(
+        @Header("Authorization") token: String
+    ): Response<HighRiskUsers>
 }

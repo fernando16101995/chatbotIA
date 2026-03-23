@@ -22,9 +22,22 @@ data class UserResponse(
     val email: String
 )
 
+data class CurrentUserInfo(
+    val id: Int,
+    val email: String,
+    val is_admin: Boolean,
+    val is_active: Boolean
+)
+
 data class StreamRequest(
     val message: String,
     @SerializedName("use_context") val useContext: Boolean = true
+)
+
+
+data class Phq9Request(
+    @SerializedName("narrative_text")
+    val narrativeText: String
 )
 
 data class ChatHistoryResponse(
@@ -124,4 +137,133 @@ data class Phq9ConversationalResult(
 
 data class MessageResponse(
     val message: String
+)
+
+///-----------------------------------------------------------------------///
+// Dashboard Metrics Response
+data class DashboardMetrics(
+    val timestamp: String,
+    val admin_email: String,
+    val users: UserMetrics,
+    val messages: MessageMetrics,
+    val phq9_assessments: PHQ9Metrics,
+    val depression_detections: DepressionMetrics,
+    val conversational_assessments: ConversationalMetrics
+)
+
+data class UserMetrics(
+    val total: Int,
+    val active: Int,
+    val admins: Int,
+    val new_this_week: Int,
+    val requiring_attention: Int
+)
+
+data class MessageMetrics(
+    val total: Int,
+    val this_week: Int,
+    val avg_per_user: Double
+)
+
+data class PHQ9Metrics(
+    val total: Int,
+    val this_week: Int,
+    val avg_score: Double,
+    val max_score: Int,
+    val by_severity: Map<String, Int>
+)
+
+data class DepressionMetrics(
+    val total: Int,
+    val positive: Int,
+    val this_week: Int,
+    val positive_rate: String
+)
+
+data class ConversationalMetrics(
+    val total: Int,
+    val completed: Int,
+    val in_progress: Int
+)
+
+// Users List Response
+data class UsersList(
+    val total: Int,
+    val limit: Int,
+    val offset: Int,
+    val users: List<UserItem>
+)
+
+data class UserItem(
+    val id: Int,
+    val email: String,
+    val is_active: Boolean,
+    val is_admin: Boolean,
+    val created_at: String,
+    val messages_count: Int,
+    val risk_level: String,
+    val requires_attention: Boolean,
+    val last_assessment: String?
+)
+
+// User Detail Response
+data class UserDetail(
+    val user: UserInfo,
+    val health_summary: HealthSummaryDetail,
+    val statistics: UserStatistics,
+    val recent_assessments: List<AssessmentItem>,
+    val recent_detections: List<UserDetectionItem>
+)
+
+data class UserInfo(
+    val id: Int,
+    val email: String,
+    val is_active: Boolean,
+    val is_admin: Boolean,
+    val created_at: String
+)
+
+data class HealthSummaryDetail(
+    val overall_risk_level: String?,
+    val requires_attention: Boolean,
+    val latest_phq9_score: Int?,
+    val total_assessments: Int,
+    val depression_detections: Int
+)
+
+data class UserStatistics(
+    val total_messages: Int,
+    val total_assessments: Int,
+    val total_detections: Int
+)
+
+data class AssessmentItem(
+    val id: Int,
+    val score: Int,
+    val severity: String,
+    val created_at: String
+)
+
+data class UserDetectionItem(
+    val id: Int,
+    val detected: Boolean,
+    val risk_level: String,
+    val confidence: Double,
+    val detected_at: String
+)
+
+// High Risk Users Response
+data class HighRiskUsers(
+    val total_high_risk: Int,
+    val users: List<HighRiskUser>
+)
+
+data class HighRiskUser(
+    val user_id: Int,
+    val email: String,
+    val risk_level: String,
+    val latest_score: Int?,
+    val high_risk_detections: Int,
+    val last_alert: String?,
+    val updated_at: String
 )
