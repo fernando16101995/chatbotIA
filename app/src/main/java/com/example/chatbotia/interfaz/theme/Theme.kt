@@ -33,7 +33,7 @@ fun ChatbotIATheme(
 ) {
     MaterialTheme(
         colorScheme = AppColorScheme,
-        typography = Typography,
+        typography = AppTypography,
         content = content
     )
 }
