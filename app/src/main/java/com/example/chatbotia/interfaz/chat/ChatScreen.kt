@@ -11,37 +11,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
-import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
-import com.example.chatbotia.interfaz.theme.VioletPrimary
-import com.example.chatbotia.interfaz.theme.YellowAccent
+import com.example.chatbotia.interfaz.theme.*
 
-/* ============================
-   📦 MODELO DE DATOS
-   ============================ */
 data class ChatMessage(
     val text: String,
     val isUser: Boolean
 )
 
-/* ============================
-   💬 PANTALLA DE CHAT
-   ============================ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    onNavigateToProfile: () -> Unit = {}
-) {
+fun ChatScreen() {
     val context = LocalContext.current
     val viewModel: ChatViewModel = viewModel(
         factory = ViewModelFactory(context)
@@ -49,7 +39,6 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Scroll automático al último mensaje
     LaunchedEffect(viewModel.messages.size) {
         if (viewModel.messages.isNotEmpty()) {
             listState.animateScrollToItem(viewModel.messages.size - 1)
@@ -59,140 +48,129 @@ fun ChatScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Borrar historial") },
-            text = { Text("¿Estás seguro de que quieres eliminar todos los mensajes? Esta acción no se puede deshacer.") },
+            title = {
+                Text(
+                    "Borrar conversación",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary
+                )
+            },
+            text = {
+                Text(
+                    "¿Estás seguro de que quieres eliminar todos los mensajes?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.clearChat()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("Borrar", color = Color.Red)
+                TextButton(onClick = {
+                    viewModel.clearChat()
+                    showDeleteDialog = false
+                }) {
+                    Text("Borrar", color = ErrorColor)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text("Cancelar", color = TextSecondary)
                 }
-            }
+            },
+            containerColor = AppSurface,
+            shape = RoundedCornerShape(20.dp)
         )
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding() // ⌨️ Sincroniza toda la UI con el teclado
-    ) {
-        // 🔮 Fondo Animado
-        AnimatedRandomPaintBackground()
-
-        // 🧾 Card del Chat
-        Card(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(0.92f)
-                .fillMaxHeight(0.85f)
-                .padding(bottom = 16.dp),
-            shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.96f)),
-            elevation = CardDefaults.cardElevation(16.dp)
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                
-                /* ---------- HEADER ---------- */
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(VioletPrimary)
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
-                ) {
-                    // Botón Perfil (Izquierda)
-                    IconButton(
-                        onClick = onNavigateToProfile,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Ver perfil",
-                            tint = Color.White
-                        )
-                    }
-
+    Scaffold(
+        containerColor = AppBackground,
+        topBar = {
+            TopAppBar(
+                title = {
                     Text(
-                        text = "Seren",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.Center)
+                        "Seren",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = TextPrimary
                     )
-
-                    // Botón Borrar (Derecha)
-                    IconButton(
-                        onClick = { showDeleteDialog = true },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
+                },
+                actions = {
+                    IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            Icons.Default.Delete,
                             contentDescription = "Borrar historial",
-                            tint = Color.White
+                            tint = TextSecondary
                         )
                     }
-                }
-
-                /* ---------- MENSAJES ---------- */
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(viewModel.messages) { message ->
-                        ChatBubble(message)
-                    }
-
-                    if (viewModel.isTyping) {
-                        item { TypingIndicator() }
-                    }
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth(),
-                    thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.5f)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AppBackground
                 )
-
-                /* ---------- INPUT ---------- */
-                ChatInput(
-                    text = viewModel.inputText,
-                    onTextChange = { viewModel.inputText = it },
-                    onSend = { viewModel.sendMessage() }
-                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppBackground)
+                .padding(padding)
+                .imePadding()
+        ) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(viewModel.messages) { message ->
+                    ChatBubble(message)
+                }
+                if (viewModel.isTyping) {
+                    item { TypingIndicator() }
+                }
             }
+
+            HorizontalDivider(
+                color = DividerColor,
+                thickness = 1.dp
+            )
+
+            ChatInput(
+                text = viewModel.inputText,
+                onTextChange = { viewModel.inputText = it },
+                onSend = { viewModel.sendMessage() },
+                isLoading = viewModel.isTyping
+            )
         }
     }
 }
 
 @Composable
 fun ChatBubble(message: ChatMessage) {
-    val alignment = if (message.isUser) Alignment.CenterEnd else Alignment.CenterStart
-    val color = if (message.isUser) VioletPrimary else Color(0xFFEEEEEE)
-    val textColor = if (message.isUser) Color.White else Color.Black
-    val shape = RoundedCornerShape(
-        topStart = 16.dp, topEnd = 16.dp,
-        bottomStart = if (message.isUser) 16.dp else 0.dp,
-        bottomEnd = if (message.isUser) 0.dp else 16.dp
-    )
+    val isUser = message.isUser
+    val alignment = if (isUser) Alignment.End else Alignment.Start
+    val bubbleColor = if (isUser) UserBubbleColor else BotBubbleColor
+    val textColor = TextPrimary
+    val shape = if (isUser) {
+        RoundedCornerShape(20.dp, 4.dp, 20.dp, 20.dp)
+    } else {
+        RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
+    }
 
-    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = alignment) {
-        Surface(color = color, shape = shape) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = alignment
+    ) {
+        Box(
+            modifier = Modifier
+                .widthIn(max = 280.dp)
+                .clip(shape)
+                .background(bubbleColor)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
             Text(
                 text = message.text,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                color = textColor,
-                fontSize = 16.sp
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor
             )
         }
     }
@@ -201,29 +179,32 @@ fun ChatBubble(message: ChatMessage) {
 @Composable
 fun TypingIndicator() {
     val transition = rememberInfiniteTransition(label = "typing")
-    val alpha by transition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(600),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
 
     Row(
         modifier = Modifier
-            .padding(8.dp)
-            .background(Color(0xFFF1F1F1), RoundedCornerShape(16.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp))
+            .background(BotBubbleColor)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        repeat(3) {
+        val dotCycleDuration = 400
+        val dotStaggerDelay = dotCycleDuration / 3 // ~133ms: stagger each dot by 1/3 of cycle
+        repeat(3) { index ->
+            val alpha by transition.animateFloat(
+                initialValue = 0.3f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(dotCycleDuration, delayMillis = index * dotStaggerDelay),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "dot$index"
+            )
             Box(
                 modifier = Modifier
-                    .size(8.dp)
-                    .padding(2.dp)
-                    .background(VioletPrimary.copy(alpha = alpha), CircleShape)
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(TextSecondary.copy(alpha = alpha))
             )
         }
     }
@@ -233,43 +214,66 @@ fun TypingIndicator() {
 fun ChatInput(
     text: String,
     onTextChange: (String) -> Unit,
-    onSend: () -> Unit
+    onSend: () -> Unit,
+    isLoading: Boolean
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppBackground)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Escribe un mensaje...", color = Color.Gray) },
-                shape = RoundedCornerShape(24.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = VioletPrimary,
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black
+        TextField(
+            value = text,
+            onValueChange = onTextChange,
+            modifier = Modifier.weight(1f),
+            placeholder = {
+                Text(
+                    "Escribe un mensaje...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
                 )
-            )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                focusedContainerColor = AppSurface,
+                unfocusedContainerColor = AppSurface,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = AccentPrimary
+            ),
+            shape = RoundedCornerShape(24.dp),
+            maxLines = 4
+        )
 
-            IconButton(
-                onClick = onSend,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .background(YellowAccent, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Enviar",
-                    tint = Color.Black
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(if (isLoading) AppSurface else AccentPrimary),
+            contentAlignment = Alignment.Center
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = AccentPrimary,
+                    strokeWidth = 2.dp
                 )
+            } else {
+                IconButton(
+                    onClick = onSend,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Enviar",
+                        tint = TextPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
     }
