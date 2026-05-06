@@ -8,6 +8,7 @@ local.properties
 # Log/cache files
 *.log
 *.xml
+!app/src/main/res/values/font_certs.xml
 *.iml
 .idea/
 
