@@ -1,5 +1,6 @@
 package com.example.chatbotia.interfaz.chat
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,34 +9,33 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
 
-data class ChatMessage(
-    val text: String,
-    val isUser: Boolean
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen() {
+fun ChatScreen(
+    onNavigateToProfile: () -> Unit = {}
+) {
     val context = LocalContext.current
-    val viewModel: ChatViewModel = viewModel(
-        factory = ViewModelFactory(context)
-    )
+    val viewModel: ChatViewModel = viewModel(factory = ViewModelFactory(context))
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -48,69 +48,53 @@ fun ChatScreen() {
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    "Borrar conversación",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextPrimary
-                )
-            },
-            text = {
-                Text(
-                    "¿Estás seguro de que quieres eliminar todos los mensajes?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
-            },
+            containerColor = SurfaceDark,
+            title = { Text("Limpiar conversación", color = TextPrimary) },
+            text = { Text("¿Deseas eliminar el historial de este chat?", color = TextSecondary) },
             confirmButton = {
-                TextButton(onClick = {
+                TextButton(onClick = { 
                     viewModel.clearChat()
-                    showDeleteDialog = false
+                    showDeleteDialog = false 
                 }) {
-                    Text("Borrar", color = ErrorColor)
+                    Text("Limpiar", color = ErrorRed)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text("Cancelar", color = TextSecondary)
                 }
-            },
-            containerColor = AppSurface,
-            shape = RoundedCornerShape(20.dp)
+            }
         )
     }
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = BgDark,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Seren",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
-                    )
+                title = { 
+                    Text("Seren", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = TextPrimary)
+                    }
                 },
                 actions = {
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Borrar historial",
-                            tint = TextSecondary
-                        )
+                        Icon(Icons.Default.Delete, contentDescription = null, tint = TextSecondary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AppBackground
+                    containerColor = BgDark,
+                    titleContentColor = TextPrimary
                 )
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(AppBackground)
                 .padding(padding)
+                .fillMaxSize()
                 .imePadding()
         ) {
             LazyColumn(
@@ -118,21 +102,13 @@ fun ChatScreen() {
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(viewModel.messages) { message ->
-                    ChatBubble(message)
-                }
-                if (viewModel.isTyping) {
-                    item { TypingIndicator() }
+                    ChatBubble(message, isStreaming = viewModel.isTyping && message == viewModel.messages.last() && !message.isUser)
                 }
             }
-
-            HorizontalDivider(
-                color = DividerColor,
-                thickness = 1.dp
-            )
 
             ChatInput(
                 text = viewModel.inputText,
@@ -145,21 +121,18 @@ fun ChatScreen() {
 }
 
 @Composable
-fun ChatBubble(message: ChatMessage) {
-    val isUser = message.isUser
-    val alignment = if (isUser) Alignment.End else Alignment.Start
-    val bubbleColor = if (isUser) UserBubbleColor else BotBubbleColor
-    val textColor = TextPrimary
-    val shape = if (isUser) {
-        RoundedCornerShape(20.dp, 4.dp, 20.dp, 20.dp)
-    } else {
-        RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
-    }
+fun ChatBubble(message: ChatMessage, isStreaming: Boolean) {
+    val alignment = if (message.isUser) Alignment.CenterEnd else Alignment.CenterStart
+    val bubbleColor = if (message.isUser) AccentViolet else SurfaceVariant
+    val textColor = if (message.isUser) Color.White else TextPrimary
+    val shape = RoundedCornerShape(
+        topStart = 16.dp, 
+        topEnd = 16.dp,
+        bottomStart = if (message.isUser) 16.dp else 4.dp,
+        bottomEnd = if (message.isUser) 4.dp else 16.dp
+    )
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = alignment
-    ) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = alignment) {
         Box(
             modifier = Modifier
                 .widthIn(max = 280.dp)
@@ -167,47 +140,38 @@ fun ChatBubble(message: ChatMessage) {
                 .background(bubbleColor)
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Text(
-                text = message.text,
-                style = MaterialTheme.typography.bodyLarge,
-                color = textColor
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = message.text,
+                    color = textColor,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                if (isStreaming) {
+                    StreamingCursor()
+                }
+            }
         }
     }
 }
 
 @Composable
-fun TypingIndicator() {
-    val transition = rememberInfiniteTransition(label = "typing")
-
-    Row(
+fun StreamingCursor() {
+    val infiniteTransition = rememberInfiniteTransition(label = "cursor")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(400),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp))
-            .background(BotBubbleColor)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val dotCycleDuration = 400
-        val dotStaggerDelay = dotCycleDuration / 3 // ~133ms: stagger each dot by 1/3 of cycle
-        repeat(3) { index ->
-            val alpha by transition.animateFloat(
-                initialValue = 0.3f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(dotCycleDuration, delayMillis = index * dotStaggerDelay),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "dot$index"
-            )
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .clip(CircleShape)
-                    .background(TextSecondary.copy(alpha = alpha))
-            )
-        }
-    }
+            .padding(start = 4.dp)
+            .size(width = 8.dp, height = 18.dp)
+            .background(AccentViolet.copy(alpha = alpha))
+    )
 }
 
 @Composable
@@ -217,62 +181,49 @@ fun ChatInput(
     onSend: () -> Unit,
     isLoading: Boolean
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppBackground)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = BgDark,
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
     ) {
-        TextField(
-            value = text,
-            onValueChange = onTextChange,
-            modifier = Modifier.weight(1f),
-            placeholder = {
-                Text(
-                    "Escribe un mensaje...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
-                focusedContainerColor = AppSurface,
-                unfocusedContainerColor = AppSurface,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = AccentPrimary
-            ),
-            shape = RoundedCornerShape(24.dp),
-            maxLines = 4
-        )
-
-        Box(
+        Row(
             modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(if (isLoading) AppSurface else AccentPrimary),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = AccentPrimary,
-                    strokeWidth = 2.dp
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(SurfaceDark)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                if (text.isEmpty()) {
+                    Text("Escribe un mensaje...", color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
+                }
+                BasicTextField(
+                    value = text,
+                    onValueChange = onTextChange,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimary),
+                    cursorBrush = SolidColor(AccentViolet),
+                    modifier = Modifier.fillMaxWidth()
                 )
-            } else {
-                IconButton(
-                    onClick = onSend,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Enviar",
-                        tint = TextPrimary,
-                        modifier = Modifier.size(18.dp)
-                    )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            IconButton(
+                onClick = onSend,
+                enabled = text.isNotBlank() && !isLoading,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(if (text.isNotBlank()) AccentViolet else SurfaceVariant, CircleShape)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                 }
             }
         }

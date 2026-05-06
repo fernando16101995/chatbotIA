@@ -1,215 +1,164 @@
 package com.example.chatbotia.interfaz.profile
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
 
-private fun capitalizeRiskLevel(level: String): String =
-    level.lowercase().replaceFirstChar { it.titlecase(java.util.Locale.getDefault()) }.ifEmpty { "—" }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onBack: () -> Unit = {},
+    onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
     val viewModel: ProfileViewModel = viewModel(factory = ViewModelFactory(context))
     val summary = viewModel.summary
-    val scrollState = rememberScrollState()
-
-    val initial = "S"
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = BgDark,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Perfil",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = TextPrimary
-                    )
+                title = { Text("Perfil", style = MaterialTheme.typography.titleLarge) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = TextPrimary)
+                    }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.logout(onLogout) }) {
-                        Icon(Icons.Default.ExitToApp, "Cerrar sesión", tint = TextSecondary)
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, "Cerrar sesión", tint = ErrorRed)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(AppBackground)
                 .padding(padding)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(scrollState),
+                .fillMaxSize()
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Avatar circular con inicial
+            // Avatar minimalista con inicial
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(100.dp)
                     .clip(CircleShape)
-                    .background(AccentPrimary),
+                    .background(SurfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = initial,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    text = "U", // Aquí podría ir la inicial del nombre real
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = AccentViolet
                 )
             }
 
-            Text(
-                text = "Mi cuenta",
-                style = MaterialTheme.typography.titleMedium,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Resumen de bienestar",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
-            if (viewModel.isLoading) {
-                repeat(3) { ShimmerCard() }
-            } else if (summary != null) {
-                ProfileStatCard(
-                    title = "Evaluaciones PHQ-9",
-                    value = summary.totalPhq9Assessments.toString(),
-                    icon = Icons.Default.Info
-                )
-                ProfileStatCard(
-                    title = "Detecciones de ánimo",
-                    value = summary.depressionDetectionCount.toString(),
-                    icon = Icons.Default.Info,
-                    highlight = summary.depressionDetectionCount > 5
-                )
-                ProfileStatCard(
-                    title = "Nivel de riesgo",
-                    value = capitalizeRiskLevel(summary.overallRiskLevel),
-                    icon = Icons.Default.Info,
-                    riskLevel = summary.overallRiskLevel
-                )
-            } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = viewModel.errorMessage ?: "No hay datos disponibles aún",
+                    text = "Resumen de Bienestar",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = TextPrimary
+                )
+                Text(
+                    text = "Estadísticas de tu camino emocional",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedButton(
-                onClick = { viewModel.logout(onLogout) },
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorColor),
-                border = BorderStroke(1.dp, ErrorColor.copy(alpha = 0.5f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                Icon(Icons.Default.ExitToApp, null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Cerrar sesión", style = MaterialTheme.typography.labelLarge)
+            if (viewModel.isLoading) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = AccentViolet, strokeWidth = 2.dp)
+                }
+            } else if (summary != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    StatCardMinimal(
+                        title = "Evaluaciones PHQ-9",
+                        value = summary.totalAssessments.toString(),
+                        icon = Icons.Default.Info
+                    )
+                    StatCardMinimal(
+                        title = "Detecciones de ánimo",
+                        value = summary.depressionDetections.toString(),
+                        icon = Icons.Default.Info
+                    )
+                    
+                    val riskLevel = summary.currentRisk ?: "minimal"
+                    StatCardMinimal(
+                        title = "Nivel de riesgo",
+                        value = riskLevel.uppercase(),
+                        icon = Icons.Default.Info,
+                        valueColor = when(riskLevel.lowercase()) {
+                            "high", "alto" -> ErrorRed
+                            "moderate", "moderado" -> Color(0xFFFFA726)
+                            else -> Color(0xFF66BB6A)
+                        }
+                    )
+                }
+            } else {
+                Text(
+                    text = viewModel.errorMessage ?: "No hay datos disponibles",
+                    color = TextSecondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun ProfileStatCard(
+fun StatCardMinimal(
     title: String,
     value: String,
     icon: ImageVector,
-    highlight: Boolean = false,
-    riskLevel: String? = null
+    valueColor: Color = TextPrimary
 ) {
-    val valueColor = when {
-        riskLevel != null -> when (riskLevel.lowercase()) {
-            "critical", "severe" -> ErrorColor
-            "moderate" -> androidx.compose.ui.graphics.Color(0xFFFFD180)
-            "mild" -> androidx.compose.ui.graphics.Color(0xFFFFFF8D)
-            else -> SuccessColor
-        }
-        highlight -> ErrorColor
-        else -> TextPrimary
-    }
-
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = AppSurface),
-        elevation = CardDefaults.cardElevation(0.dp)
+        color = SurfaceDark,
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, tint = AccentPrimary, modifier = Modifier.size(20.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(title, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                Text(value, style = MaterialTheme.typography.titleMedium, color = valueColor, fontWeight = FontWeight.SemiBold)
+                Text(title, style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                Text(value, style = MaterialTheme.typography.titleMedium, color = valueColor, fontWeight = FontWeight.Bold)
             }
         }
     }
-}
-
-@Composable
-fun ShimmerCard() {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = 0.2f,
-        targetValue = 0.5f,
-        animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse),
-        label = "shimmerAlpha"
-    )
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(AppSurface.copy(alpha = alpha + 0.5f))
-    )
 }
