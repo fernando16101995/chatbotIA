@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -138,9 +139,7 @@ fun ProfileScreen(
                 onClick = { viewModel.logout(onLogout) },
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorColor),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(ErrorColor.copy(alpha = 0.5f))
-                ),
+                border = BorderStroke(1.dp, ErrorColor.copy(alpha = 0.5f)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
