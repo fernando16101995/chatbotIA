@@ -24,6 +24,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.data.model.HistoryMessage
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+private fun formatHistoryDate(isoDate: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val date = inputFormat.parse(isoDate.take(19)) ?: return isoDate
+        outputFormat.format(date)
+    } catch (e: Exception) {
+        isoDate.take(16).replace("T", " ")
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,7 +161,7 @@ fun HistoryMessageCard(message: HistoryMessage) {
     val isUser = message.role == "user"
     val labelColor = if (isUser) AccentPrimary else TextSecondary
     val label = if (isUser) "Tú" else "Seren"
-    val formattedDate = message.created_at.take(16).replace("T", " ")
+    val formattedDate = formatHistoryDate(message.created_at)
 
     Card(
         modifier = Modifier.fillMaxWidth(),

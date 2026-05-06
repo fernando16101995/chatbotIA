@@ -29,6 +29,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
 
+private fun capitalizeRiskLevel(level: String): String =
+    level.lowercase().replaceFirstChar { it.titlecase(java.util.Locale.getDefault()) }.ifEmpty { "—" }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -121,7 +124,7 @@ fun ProfileScreen(
                 )
                 ProfileStatCard(
                     title = "Nivel de riesgo",
-                    value = summary.overallRiskLevel.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }.ifEmpty { "—" },
+                    value = capitalizeRiskLevel(summary.overallRiskLevel),
                     icon = Icons.Default.Info,
                     riskLevel = summary.overallRiskLevel
                 )

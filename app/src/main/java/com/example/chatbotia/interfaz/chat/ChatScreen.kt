@@ -188,13 +188,14 @@ fun TypingIndicator() {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val dotCycleDuration = 400
+        val dotStaggerDelay = dotCycleDuration / 3 // ~133ms: stagger each dot by 1/3 of cycle
         repeat(3) { index ->
             val alpha by transition.animateFloat(
                 initialValue = 0.3f,
                 targetValue = 1f,
                 animationSpec = infiniteRepeatable(
-                    // Stagger each dot by 1/3 of the 400ms animation cycle
-                    animation = tween(400, delayMillis = index * 133),
+                    animation = tween(dotCycleDuration, delayMillis = index * dotStaggerDelay),
                     repeatMode = RepeatMode.Reverse
                 ),
                 label = "dot$index"
