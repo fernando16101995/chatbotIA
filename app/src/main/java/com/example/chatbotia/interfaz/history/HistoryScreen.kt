@@ -52,7 +52,6 @@ fun HistoryScreen() {
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteHistory { showDeleteDialog = false }
-                    showDeleteDialog = false
                 }) {
                     Text("Borrar", color = ErrorColor)
                 }

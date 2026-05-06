@@ -120,7 +120,7 @@ fun ProfileScreen(
                 )
                 ProfileStatCard(
                     title = "Nivel de riesgo",
-                    value = summary.overallRiskLevel.replaceFirstChar { it.uppercase() },
+                    value = summary.overallRiskLevel.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }.ifEmpty { "—" },
                     icon = Icons.Default.Info,
                     riskLevel = summary.overallRiskLevel
                 )

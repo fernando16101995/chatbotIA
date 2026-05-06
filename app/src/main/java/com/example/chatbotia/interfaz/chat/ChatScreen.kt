@@ -193,6 +193,7 @@ fun TypingIndicator() {
                 initialValue = 0.3f,
                 targetValue = 1f,
                 animationSpec = infiniteRepeatable(
+                    // Stagger each dot by 1/3 of the 400ms animation cycle
                     animation = tween(400, delayMillis = index * 133),
                     repeatMode = RepeatMode.Reverse
                 ),
