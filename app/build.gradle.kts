@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.chatbotia"
-    compileSdk = 35 // Ajustado a valor estándar estable
+    compileSdk = 36 // Ajustado a valor estándar estable
 
     defaultConfig {
         applicationId = "com.example.chatbotia"

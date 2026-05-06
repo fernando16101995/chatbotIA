@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
@@ -96,16 +95,16 @@ fun ProfileScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     StatCardMinimal(
                         title = "Evaluaciones PHQ-9",
-                        value = summary.totalAssessments.toString(),
+                        value = summary.totalPhq9Assessments.toString(),
                         icon = Icons.Default.Info
                     )
                     StatCardMinimal(
                         title = "Detecciones de ánimo",
-                        value = summary.depressionDetections.toString(),
+                        value = summary.depressionDetectionCount.toString(),
                         icon = Icons.Default.Info
                     )
                     
-                    val riskLevel = summary.currentRisk ?: "minimal"
+                    val riskLevel = summary.overallRiskLevel
                     StatCardMinimal(
                         title = "Nivel de riesgo",
                         value = riskLevel.uppercase(),

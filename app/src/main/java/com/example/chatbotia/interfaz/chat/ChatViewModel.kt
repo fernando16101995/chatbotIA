@@ -10,6 +10,11 @@ import com.example.chatbotia.data.model.ChatRepository
 import com.example.chatbotia.data.model.TokenManager
 import kotlinx.coroutines.launch
 
+data class ChatMessage(
+    val text: String,
+    val isUser: Boolean
+)
+
 class ChatViewModel(
     private val repository: ChatRepository = ChatRepository(),
     private val tokenManager: TokenManager

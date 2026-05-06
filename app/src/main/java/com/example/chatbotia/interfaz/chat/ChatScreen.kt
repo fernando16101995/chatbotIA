@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
@@ -23,8 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.chatbotia.interfaz.ViewModelFactory
 import com.example.chatbotia.interfaz.theme.*
@@ -39,9 +43,18 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // Scroll automático al final cuando llega un mensaje nuevo
     LaunchedEffect(viewModel.messages.size) {
         if (viewModel.messages.isNotEmpty()) {
             listState.animateScrollToItem(viewModel.messages.size - 1)
+        }
+    }
+
+    // Scroll automático mientras el bot escribe (streaming)
+    if (viewModel.isTyping && viewModel.messages.isNotEmpty()) {
+        val lastMessage = viewModel.messages.last()
+        LaunchedEffect(lastMessage.text.length) {
+            listState.scrollToItem(viewModel.messages.size - 1)
         }
     }
 
@@ -106,7 +119,11 @@ fun ChatScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(viewModel.messages) { message ->
-                    ChatBubble(message, isStreaming = viewModel.isTyping && message == viewModel.messages.last() && !message.isUser)
+                    val isLast = viewModel.messages.lastOrNull() == message
+                    ChatBubble(
+                        message = message, 
+                        isStreaming = viewModel.isTyping && isLast && !message.isUser
+                    )
                 }
             }
 
@@ -122,7 +139,7 @@ fun ChatScreen(
 
 @Composable
 fun ChatBubble(message: ChatMessage, isStreaming: Boolean) {
-    val alignment = if (message.isUser) Alignment.CenterEnd else Alignment.CenterStart
+    val horizontalAlignment: Alignment.Horizontal = if (message.isUser) Alignment.End else Alignment.Start
     val bubbleColor = if (message.isUser) AccentViolet else SurfaceVariant
     val textColor = if (message.isUser) Color.White else TextPrimary
     val shape = RoundedCornerShape(
@@ -132,7 +149,10 @@ fun ChatBubble(message: ChatMessage, isStreaming: Boolean) {
         bottomEnd = if (message.isUser) 4.dp else 16.dp
     )
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = alignment) {
+    Column(
+        modifier = Modifier.fillMaxWidth(), 
+        horizontalAlignment = horizontalAlignment
+    ) {
         Box(
             modifier = Modifier
                 .widthIn(max = 280.dp)
@@ -140,14 +160,16 @@ fun ChatBubble(message: ChatMessage, isStreaming: Boolean) {
                 .background(bubbleColor)
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = message.text,
-                    color = textColor,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                if (isStreaming) {
-                    StreamingCursor()
+            SelectionContainer {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = message.text,
+                        color = textColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    if (isStreaming) {
+                        StreamingCursor()
+                    }
                 }
             }
         }
@@ -207,7 +229,14 @@ fun ChatInput(
                     onValueChange = onTextChange,
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimary),
                     cursorBrush = SolidColor(AccentViolet),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Send,
+                        capitalization = KeyboardCapitalization.Sentences
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSend = { if (text.isNotBlank()) onSend() }
+                    )
                 )
             }
 

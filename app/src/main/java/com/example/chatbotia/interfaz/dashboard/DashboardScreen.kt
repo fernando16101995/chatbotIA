@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.chatbotia.data.model.DashboardMetrics
 import com.example.chatbotia.interfaz.theme.*
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +35,7 @@ fun DashboardScreen(
     }
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = BgDark,
         topBar = {
             TopAppBar(
                 title = {
@@ -49,7 +50,7 @@ fun DashboardScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = TextPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
             )
         }
     ) { paddingValues ->
@@ -63,7 +64,7 @@ fun DashboardScreen(
                 isLoading.value -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = AccentPrimary
+                        color = AccentViolet
                     )
                 }
                 errorMessage.value.isNotEmpty() -> {
@@ -74,13 +75,13 @@ fun DashboardScreen(
                         Text(
                             text = "Ocurrió un error",
                             style = MaterialTheme.typography.titleMedium,
-                            color = ErrorColor
+                            color = ErrorRed
                         )
                         Text(text = errorMessage.value, color = TextSecondary)
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = { viewModel.loadDashboardMetrics(token) },
-                            colors = ButtonDefaults.buttonColors(containerColor = AccentPrimary)
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentViolet)
                         ) {
                             Text("Reintentar")
                         }
@@ -124,7 +125,7 @@ fun DashboardContent(metrics: DashboardMetrics) {
             items = listOf(
                 "Mensajes totales: ${metrics.messages.total}",
                 "Esta semana: ${metrics.messages.this_week}",
-                "Promedio diario por usuario: ${String.format("%.2f", metrics.messages.avg_per_user)}"
+                "Promedio diario por usuario: ${String.format(Locale.getDefault(), "%.2f", metrics.messages.avg_per_user)}"
             )
         )
         MetricCard(
@@ -132,7 +133,7 @@ fun DashboardContent(metrics: DashboardMetrics) {
             items = listOf(
                 "Evaluaciones realizadas: ${metrics.phq9_assessments.total}",
                 "Esta semana: ${metrics.phq9_assessments.this_week}",
-                "Puntuación media: ${String.format("%.2f", metrics.phq9_assessments.avg_score)}",
+                "Puntuación media: ${String.format(Locale.getDefault(), "%.2f", metrics.phq9_assessments.avg_score)}",
                 "Puntuación máxima: ${metrics.phq9_assessments.max_score}"
             )
         )
@@ -160,7 +161,7 @@ fun MetricCard(title: String, items: List<String>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = AppSurface),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(
@@ -171,9 +172,9 @@ fun MetricCard(title: String, items: List<String>) {
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = AccentPrimary
+                color = AccentViolet
             )
-            HorizontalDivider(color = DividerColor)
+            HorizontalDivider(color = BorderSubtle)
             items.forEach { item ->
                 Text(text = item, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             }

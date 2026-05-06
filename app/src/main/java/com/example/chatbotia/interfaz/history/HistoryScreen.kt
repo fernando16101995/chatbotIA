@@ -66,7 +66,7 @@ fun HistoryScreen() {
                 TextButton(onClick = {
                     viewModel.deleteHistory { showDeleteDialog = false }
                 }) {
-                    Text("Borrar", color = ErrorColor)
+                    Text("Borrar", color = ErrorRed)
                 }
             },
             dismissButton = {
@@ -74,13 +74,13 @@ fun HistoryScreen() {
                     Text("Cancelar", color = TextSecondary)
                 }
             },
-            containerColor = AppSurface,
+            containerColor = SurfaceDark,
             shape = RoundedCornerShape(20.dp)
         )
     }
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = BgDark,
         topBar = {
             TopAppBar(
                 title = {
@@ -101,14 +101,14 @@ fun HistoryScreen() {
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BgDark)
             )
         }
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(AppBackground)
+                .background(BgDark)
                 .padding(padding)
         ) {
             when {
@@ -159,14 +159,14 @@ fun HistoryScreen() {
 @Composable
 fun HistoryMessageCard(message: HistoryMessage) {
     val isUser = message.role == "user"
-    val labelColor = if (isUser) AccentPrimary else TextSecondary
+    val labelColor = if (isUser) AccentViolet else TextSecondary
     val label = if (isUser) "Tú" else "Seren"
     val formattedDate = formatHistoryDate(message.created_at)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = AppSurface),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -212,6 +212,6 @@ fun HistoryShimmerItem() {
             .fillMaxWidth()
             .height(80.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(AppSurface.copy(alpha = alpha + 0.4f))
+            .background(SurfaceDark.copy(alpha = alpha + 0.4f))
     )
 }

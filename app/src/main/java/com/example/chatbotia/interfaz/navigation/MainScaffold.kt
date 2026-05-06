@@ -46,7 +46,7 @@ fun MainScaffold(onLogout: () -> Unit) {
     val navController = rememberNavController()
 
     Scaffold(
-        containerColor = AppBackground,
+        containerColor = BgDark,
         bottomBar = {
             SerenBottomBar(navController = navController)
         }
@@ -57,13 +57,32 @@ fun MainScaffold(onLogout: () -> Unit) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(MainTab.Chat.route) {
-                ChatScreen()
+                ChatScreen(onNavigateToProfile = {
+                    navController.navigate(MainTab.Profile.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                })
             }
             composable(MainTab.History.route) {
                 HistoryScreen()
             }
             composable(MainTab.Profile.route) {
-                ProfileScreen(onLogout = onLogout)
+                ProfileScreen(
+                    onBack = {
+                        navController.navigate(MainTab.Chat.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onLogout = onLogout
+                )
             }
         }
     }
@@ -75,7 +94,7 @@ fun SerenBottomBar(navController: NavHostController) {
     val currentRoute = backStackEntry?.destination?.route
 
     NavigationBar(
-        containerColor = AppSurface,
+        containerColor = SurfaceDark,
         tonalElevation = 0.dp,
         modifier = Modifier.height(64.dp)
     ) {
@@ -100,14 +119,14 @@ fun SerenBottomBar(navController: NavHostController) {
                                     .width(56.dp)
                                     .height(28.dp)
                                     .clip(RoundedCornerShape(50))
-                                    .background(AccentPrimary.copy(alpha = 0.15f))
+                                    .background(AccentViolet.copy(alpha = 0.15f))
                             )
                         }
                         Icon(
                             imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
                             contentDescription = tab.label,
                             modifier = Modifier.size(20.dp),
-                            tint = if (selected) AccentPrimary else TextSecondary
+                            tint = if (selected) AccentViolet else TextSecondary
                         )
                     }
                 },
@@ -115,12 +134,12 @@ fun SerenBottomBar(navController: NavHostController) {
                     Text(
                         tab.label,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (selected) AccentPrimary else TextSecondary
+                        color = if (selected) AccentViolet else TextSecondary
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                    selectedIconColor = AccentPrimary,
+                    selectedIconColor = AccentViolet,
                     unselectedIconColor = TextSecondary
                 )
             )

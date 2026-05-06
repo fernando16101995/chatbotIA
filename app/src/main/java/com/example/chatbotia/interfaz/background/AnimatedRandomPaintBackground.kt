@@ -9,8 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import com.example.chatbotia.interfaz.theme.VioletPrimary
-import com.example.chatbotia.interfaz.theme.YellowAccent
+import com.example.chatbotia.interfaz.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -53,8 +52,8 @@ fun AnimatedRandomPaintBackground(
     }
 
     Canvas(modifier = modifier) {
-        // 1. Fondo morado (usando el del tema)
-        drawRect(color = VioletPrimary)
+        // 1. Fondo (usando el del tema)
+        drawRect(color = BgDark)
 
         // 2. Dibujar cada mancha
         blobs.forEach { blob ->
@@ -64,19 +63,19 @@ fun AnimatedRandomPaintBackground(
                 y = size.height * blob.center.y
             )
 
-            // Mancha amarilla (usando la del tema)
+            // Mancha (usando color de acento del tema)
             drawCircle(
-                color = YellowAccent.copy(alpha = 0.8f),
+                color = AccentViolet.copy(alpha = 0.4f),
                 radius = radius,
                 center = centerOffset
             )
 
-            // Borde negro
+            // Borde sutil
             drawCircle(
-                color = blackStroke,
+                color = BorderSubtle,
                 radius = radius,
                 center = centerOffset,
-                style = Stroke(width = 8f)
+                style = Stroke(width = 2f)
             )
         }
     }
