@@ -1,21 +1,21 @@
 package com.example.chatbotia.interfaz.login
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.chatbotia.interfaz.background.AnimatedRandomPaintBackground
-import com.example.chatbotia.interfaz.theme.VioletPrimary
-import com.example.chatbotia.interfaz.theme.YellowAccent
+import com.example.chatbotia.interfaz.theme.*
 
 @Composable
 fun LoginContent(
@@ -23,112 +23,134 @@ fun LoginContent(
     onLoginSuccess: (isAdmin: Boolean) -> Unit,
     onGoToRegister: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        // 🔮 Fondo animado compartido
-        AnimatedRandomPaintBackground()
-
-        Card(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppBackground),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
             modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth(0.9f),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            ),
-            elevation = CardDefaults.cardElevation(12.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(28.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            Spacer(modifier = Modifier.height(32.dp))
 
+            Text(
+                text = "Seren",
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+
+            Text(
+                text = "Tu compañero de bienestar",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Email field
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Seren",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = VioletPrimary
+                    text = "Correo electrónico",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextSecondary
                 )
-
-                Text(
-                    text = "Inicia sesión",
-                    color = VioletPrimary
-                )
-
-                OutlinedTextField(
+                TextField(
                     value = viewModel.email,
                     onValueChange = { viewModel.email = it },
-                    label = { Text("Correo electrónico") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
                     enabled = !viewModel.isLoading,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedBorderColor = VioletPrimary,
-                        unfocusedBorderColor = VioletPrimary,
-                        focusedLabelColor = VioletPrimary,
-                        cursorColor = VioletPrimary
-                    )
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedContainerColor = AppSurfaceVariant,
+                        unfocusedContainerColor = AppSurface,
+                        focusedIndicatorColor = AccentPrimary,
+                        unfocusedIndicatorColor = DividerColor,
+                        cursorColor = AccentPrimary,
+                        focusedLabelColor = AccentPrimary,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
                 )
+            }
 
-                OutlinedTextField(
+            // Password field
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Contraseña",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextSecondary
+                )
+                TextField(
                     value = viewModel.password,
                     onValueChange = { viewModel.password = it },
-                    label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true,
+                    enabled = !viewModel.isLoading,
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !viewModel.isLoading,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedBorderColor = VioletPrimary,
-                        unfocusedBorderColor = VioletPrimary,
-                        focusedLabelColor = VioletPrimary,
-                        cursorColor = VioletPrimary
-                    )
-                )
-
-                if (viewModel.errorMessage != null) {
-                    Text(
-                        text = viewModel.errorMessage!!,
-                        color = Color.Red,
-                        fontSize = 14.sp,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                }
-
-                Button(
-                    onClick = { viewModel.login(onLoginSuccess) },
-                    enabled = !viewModel.isLoading,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = YellowAccent
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        focusedContainerColor = AppSurfaceVariant,
+                        unfocusedContainerColor = AppSurface,
+                        focusedIndicatorColor = AccentPrimary,
+                        unfocusedIndicatorColor = DividerColor,
+                        cursorColor = AccentPrimary
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                ) {
-                    if (viewModel.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = Color.Black,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(
-                            "Entrar",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                    }
-                }
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                )
+            }
 
-                // 👉 Ir a registro
-                ClickableText(
-                    text = AnnotatedString("¿No tienes cuenta? Regístrate"),
-                    onClick = { onGoToRegister() },
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+            AnimatedVisibility(visible = viewModel.errorMessage != null) {
+                Text(
+                    text = viewModel.errorMessage ?: "",
+                    color = ErrorColor,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Button(
+                onClick = { viewModel.login(onLoginSuccess) },
+                enabled = !viewModel.isLoading,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentPrimary,
+                    disabledContainerColor = AccentPrimary.copy(alpha = 0.4f)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                if (viewModel.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = TextPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        "Iniciar sesión",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextPrimary
+                    )
+                }
+            }
+
+            TextButton(onClick = onGoToRegister) {
+                Text(
+                    "¿No tienes cuenta? Regístrate",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = AccentPrimary
                 )
             }
         }

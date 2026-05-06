@@ -7,6 +7,7 @@ import com.example.chatbotia.data.model.AuthRepository
 import com.example.chatbotia.data.model.ChatRepository
 import com.example.chatbotia.data.model.TokenManager
 import com.example.chatbotia.interfaz.chat.ChatViewModel
+import com.example.chatbotia.interfaz.history.HistoryViewModel
 import com.example.chatbotia.interfaz.login.LoginViewModel
 import com.example.chatbotia.interfaz.profile.ProfileViewModel
 import com.example.chatbotia.interfaz.register.RegisterViewModel
@@ -16,7 +17,7 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val tokenManager = TokenManager(context)
         val chatRepository = ChatRepository()
-        
+
         return when {
             modelClass.isAssignableFrom(LoginViewModel::class.java) -> {
                 LoginViewModel(AuthRepository(), tokenManager) as T
@@ -29,6 +30,9 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
             }
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
                 ProfileViewModel(chatRepository, tokenManager) as T
+            }
+            modelClass.isAssignableFrom(HistoryViewModel::class.java) -> {
+                HistoryViewModel(chatRepository, tokenManager) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }

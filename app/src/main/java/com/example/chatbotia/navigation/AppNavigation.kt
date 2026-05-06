@@ -1,21 +1,21 @@
 package com.example.chatbotia.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.chatbotia.interfaz.chat.ChatScreen
-import com.example.chatbotia.interfaz.login.LoginScreen
-import com.example.chatbotia.interfaz.profile.ProfileScreen
-import com.example.chatbotia.interfaz.register.RegisterScreen
-
+import com.example.chatbotia.data.model.RetrofitClient
+import com.example.chatbotia.data.model.TokenManager
 import com.example.chatbotia.interfaz.dashboard.DashboardScreen
 import com.example.chatbotia.interfaz.dashboard.DashboardViewModel
 import com.example.chatbotia.interfaz.dashboard.DashboardViewModelFactory
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.chatbotia.data.model.RetrofitClient
-import com.example.chatbotia.data.model.TokenManager
+import com.example.chatbotia.interfaz.login.LoginScreen
+import com.example.chatbotia.interfaz.navigation.MainScaffold
+import com.example.chatbotia.interfaz.register.RegisterScreen
 
 @Composable
 fun AppNavigation() {
@@ -24,18 +24,19 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "login",
+        enterTransition = { fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) },
+        exitTransition = { fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) }
     ) {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = { isAdmin ->
                     if (isAdmin) {
-                        // ✅ Ahora coincide con la ruta definida abajo
                         navController.navigate("dashboard") {
                             popUpTo("login") { inclusive = true }
                         }
                     } else {
-                        navController.navigate("chat") {
+                        navController.navigate("main") {
                             popUpTo("login") { inclusive = true }
                         }
                     }
@@ -45,6 +46,7 @@ fun AppNavigation() {
                 }
             )
         }
+
         composable("register") {
             RegisterScreen(
                 onRegisterSuccess = {
@@ -56,17 +58,8 @@ fun AppNavigation() {
             )
         }
 
-        composable("chat") {
-            ChatScreen(
-                onNavigateToProfile = {
-                    navController.navigate("profile")
-                }
-            )
-        }
-
-        composable("profile") {
-            ProfileScreen(
-                onBack = { navController.popBackStack() },
+        composable("main") {
+            MainScaffold(
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
@@ -78,7 +71,6 @@ fun AppNavigation() {
         composable("dashboard") {
             val tokenManager = TokenManager(context)
             val token = tokenManager.getToken() ?: ""
-            
             val factory = DashboardViewModelFactory(RetrofitClient.api)
             val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
 
