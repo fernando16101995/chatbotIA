@@ -6,14 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.chatbotia"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 35 // Ajustado a valor estándar estable
 
     defaultConfig {
         applicationId = "com.example.chatbotia"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -52,6 +50,10 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended") // version managed by Compose BOM
     implementation(libs.androidx.navigation.compose)
+    
+    // Google Fonts
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.7.5")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,12 +66,11 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
-    // OkHttp (logging interceptor útil para debug)
+    // OkHttp
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
-    // Coroutines (para llamadas asíncronas)
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    //liveData para compose
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
 }
