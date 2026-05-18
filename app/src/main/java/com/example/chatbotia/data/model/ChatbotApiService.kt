@@ -119,4 +119,17 @@ interface ChatbotApiService {
     suspend fun getHighRiskUsers(
         @Header("Authorization") token: String
     ): Response<HighRiskUsers>
+
+    @PUT("admin/dashboard/user/{user_id}")
+    suspend fun updateUser(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: Int,
+        @Body request: UpdateUserRequest
+    ): Response<UpdateUserResponse>
+
+    @DELETE("admin/dashboard/user/{user_id}")
+    suspend fun deleteUser(
+        @Header("Authorization") token: String,
+        @Path("user_id") userId: Int
+    ): Response<MessageResponse>
 }

@@ -78,4 +78,45 @@ class DashboardViewModel(private val apiService: ChatbotApiService) : ViewModel(
             }
         }
     }
+
+    private val _operationResult = MutableLiveData<String>()
+    val operationResult: LiveData<String> = _operationResult
+
+    fun deleteUser(token: String, userId: Int, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.deleteUser("Bearer $token", userId)
+                if (response.isSuccessful) {
+                    _operationResult.value = response.body()?.message ?: "Usuario eliminado"
+                    onSuccess()
+                } else {
+                    _errorMessage.value = "Error: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateUser(token: String, userId: Int, request: UpdateUserRequest, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = apiService.updateUser("Bearer $token", userId, request)
+                if (response.isSuccessful) {
+                    _operationResult.value = response.body()?.message ?: "Usuario actualizado"
+                    onSuccess()
+                } else {
+                    _errorMessage.value = "Error: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }

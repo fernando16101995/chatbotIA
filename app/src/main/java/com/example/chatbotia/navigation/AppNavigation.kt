@@ -16,6 +16,7 @@ import com.example.chatbotia.interfaz.dashboard.DashboardViewModelFactory
 import com.example.chatbotia.interfaz.login.LoginScreen
 import com.example.chatbotia.interfaz.navigation.MainScaffold
 import com.example.chatbotia.interfaz.register.RegisterScreen
+import com.example.chatbotia.interfaz.dashboard.UsersManagementScreen
 
 @Composable
 fun AppNavigation() {
@@ -75,6 +76,21 @@ fun AppNavigation() {
             val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
 
             DashboardScreen(
+                viewModel = dashboardViewModel,
+                token = token,
+                onBackClick = { navController.popBackStack()},
+                onManageUsersClick = { navController.navigate("Users_management")}
+
+            )
+        }
+
+        composable("users_management") {
+            val tokenManager = TokenManager(context)
+            val token = tokenManager.getToken() ?: ""
+            val factory = DashboardViewModelFactory(RetrofitClient.api)
+            val dashboardViewModel: DashboardViewModel = viewModel(factory = factory)
+
+            UsersManagementScreen(
                 viewModel = dashboardViewModel,
                 token = token,
                 onBackClick = { navController.popBackStack() }

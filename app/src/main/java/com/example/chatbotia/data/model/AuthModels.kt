@@ -194,6 +194,17 @@ data class UsersList(
     val users: List<UserItem>
 )
 
+data class UpdateUserRequest(
+    val email: String? = null,
+    val is_active: Boolean? = null,
+    val is_admin: Boolean? = null
+)
+
+data class UpdateUserResponse(
+    val message: String,
+    val user: UserItem
+)
+
 data class UserItem(
     val id: Int,
     val email: String,

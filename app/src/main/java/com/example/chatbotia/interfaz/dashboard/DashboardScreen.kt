@@ -22,7 +22,9 @@ import java.util.Locale
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     token: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onManageUsersClick: () -> Unit
+
 ) {
     val metricsState = viewModel.dashboardMetrics.observeAsState()
     val isLoading = viewModel.isLoading.observeAsState(initial = false)
@@ -88,7 +90,7 @@ fun DashboardScreen(
                     }
                 }
                 currentMetrics != null -> {
-                    DashboardContent(metrics = currentMetrics)
+                    DashboardContent(metrics = currentMetrics, onManageUsersClick = onManageUsersClick)
                 }
                 else -> {
                     Text(
@@ -103,14 +105,25 @@ fun DashboardScreen(
 }
 
 @Composable
-fun DashboardContent(metrics: DashboardMetrics) {
+fun DashboardContent(metrics: DashboardMetrics, onManageUsersClick: () -> Unit ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    )
+        {
+            Button(
+                onClick = onManageUsersClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentViolet)
+            ){
+                    Text("Gestionar Usuarios")
+             }
+
+
+
         MetricCard(
             title = "Gestión de Usuarios",
             items = listOf(
